@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package token;
+
+option go_package = "github.com/bannote/token-service/pkg/proto";
+
+service TokenService {
+  rpc GenerateAccessToken(GenerateAccessTokenRequest) returns (GenerateAccessTokenResponse);
+  rpc ValidateAccessToken(ValidateAccessTokenRequest) returns (ValidateAccessTokenResponse);
+}
+
+message GenerateAccessTokenRequest {
+  string user_id = 1;
+  map<string, string> claims = 2;
+}
+
+message GenerateAccessTokenResponse {
+  string access_token = 1;
+  int64 expires_at = 2;
+}
+
+message ValidateAccessTokenRequest {
+  string access_token = 1;
+}
+
+message ValidateAccessTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  map<string, string> claims = 3;
+  string error = 4;
+}
