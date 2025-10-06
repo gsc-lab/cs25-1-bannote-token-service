@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gsc-lab/cs25-1-bannote-token-service/pkg/jwt"
 	"log"
 	"net"
 
+	"github.com/gsc-lab/cs25-1-bannote-token-service/internal/config"
+	"github.com/gsc-lab/cs25-1-bannote-token-service/pkg/jwt"
 	pb "github.com/gsc-lab/cs25-1-bannote-token-service/pkg/proto"
 	"google.golang.org/grpc"
 )
@@ -60,18 +61,22 @@ func (s *server) ValidateAccessToken(ctx context.Context, req *pb.ValidateAccess
 }
 
 func main() {
-	port := "9090"
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Server.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	jwtManager := jwt.NewManager("very-secret", 15)
+	jwtManager := jwt.NewManager(cfg.JWT.Secret, cfg.JWT.ExpirationMinutes)
 
 	s := grpc.NewServer()
 	pb.RegisterTokenServiceServer(s, &server{jwtManager: jwtManager})
 
-	log.Printf("gRPC server listening on port %s", port)
+	log.Printf("gRPC server listening on port %s", cfg.Server.Port)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
