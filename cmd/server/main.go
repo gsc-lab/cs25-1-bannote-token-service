@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/gsc-lab/cs25-1-bannote-token-service/pkg/jwt"
 	"log"
 	"net"
 
@@ -12,26 +13,48 @@ import (
 
 type server struct {
 	pb.UnimplementedTokenServiceServer
+	jwtManager *jwt.Manager
 }
 
 func (s *server) GenerateAccessToken(ctx context.Context, req *pb.GenerateAccessTokenRequest) (*pb.GenerateAccessTokenResponse, error) {
-	log.Printf("GenerateAccessToken called: user_id=%s, claims=%v", req.UserId, req.Claims)
+	log.Printf("GenerateAccessToken called: user_id=%s, roles=%s", req.UserId, req.Roles)
 
-	// Mock response - echo back the input
+	if req.UserId == "" {
+		return nil, fmt.Errorf("user_id is required")
+	}
+
+	if req.Roles == "" {
+		return nil, fmt.Errorf("roles is required")
+	}
+
+	token, expiresAt, err := s.jwtManager.GenerateToken(req.UserId, req.Roles)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.GenerateAccessTokenResponse{
-		AccessToken: fmt.Sprintf("mock_token_for_%s", req.UserId),
-		ExpiresAt:   1234567890,
+		AccessToken: token,
+		ExpiresAt:   expiresAt,
 	}, nil
 }
 
 func (s *server) ValidateAccessToken(ctx context.Context, req *pb.ValidateAccessTokenRequest) (*pb.ValidateAccessTokenResponse, error) {
 	log.Printf("ValidateAccessToken called: token=%s", req.AccessToken)
 
-	// Mock response - always return valid
+	claims, err := s.jwtManager.ValidateToken(req.AccessToken)
+
+	if err != nil {
+		return &pb.ValidateAccessTokenResponse{
+			Valid: false,
+			Error: err.Error(),
+		}, nil
+	}
+
 	return &pb.ValidateAccessTokenResponse{
 		Valid:  true,
-		UserId: "mock_user",
-		Claims: map[string]string{"role": "admin"},
+		UserId: claims.UserID,
+		Roles:  claims.Roles,
 		Error:  "",
 	}, nil
 }
@@ -43,8 +66,10 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	jwtManager := jwt.NewManager("very-secret", 15)
+
 	s := grpc.NewServer()
-	pb.RegisterTokenServiceServer(s, &server{})
+	pb.RegisterTokenServiceServer(s, &server{jwtManager: jwtManager})
 
 	log.Printf("gRPC server listening on port %s", port)
 	if err := s.Serve(lis); err != nil {

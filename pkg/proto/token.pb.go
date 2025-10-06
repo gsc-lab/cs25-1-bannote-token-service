@@ -24,7 +24,7 @@ const (
 type GenerateAccessTokenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Claims        map[string]string      `protobuf:"bytes,2,rep,name=claims,proto3" json:"claims,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Roles         string                 `protobuf:"bytes,2,opt,name=roles,proto3" json:"roles,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -66,11 +66,11 @@ func (x *GenerateAccessTokenRequest) GetUserId() string {
 	return ""
 }
 
-func (x *GenerateAccessTokenRequest) GetClaims() map[string]string {
+func (x *GenerateAccessTokenRequest) GetRoles() string {
 	if x != nil {
-		return x.Claims
+		return x.Roles
 	}
-	return nil
+	return ""
 }
 
 type GenerateAccessTokenResponse struct {
@@ -173,7 +173,7 @@ type ValidateAccessTokenResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
 	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Claims        map[string]string      `protobuf:"bytes,3,rep,name=claims,proto3" json:"claims,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Roles         string                 `protobuf:"bytes,3,opt,name=roles,proto3" json:"roles,omitempty"`
 	Error         string                 `protobuf:"bytes,4,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -223,11 +223,11 @@ func (x *ValidateAccessTokenResponse) GetUserId() string {
 	return ""
 }
 
-func (x *ValidateAccessTokenResponse) GetClaims() map[string]string {
+func (x *ValidateAccessTokenResponse) GetRoles() string {
 	if x != nil {
-		return x.Claims
+		return x.Roles
 	}
-	return nil
+	return ""
 }
 
 func (x *ValidateAccessTokenResponse) GetError() string {
@@ -241,27 +241,21 @@ var File_proto_token_proto protoreflect.FileDescriptor
 
 const file_proto_token_proto_rawDesc = "" +
 	"\n" +
-	"\x11proto/token.proto\x12\x05token\"\xb7\x01\n" +
+	"\x11proto/token.proto\x12\x05token\"K\n" +
 	"\x1aGenerateAccessTokenRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12E\n" +
-	"\x06claims\x18\x02 \x03(\v2-.token.GenerateAccessTokenRequest.ClaimsEntryR\x06claims\x1a9\n" +
-	"\vClaimsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"_\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05roles\x18\x02 \x01(\tR\x05roles\"_\n" +
 	"\x1bGenerateAccessTokenResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x1d\n" +
 	"\n" +
 	"expires_at\x18\x02 \x01(\x03R\texpiresAt\"?\n" +
 	"\x1aValidateAccessTokenRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"\xe5\x01\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"x\n" +
 	"\x1bValidateAccessTokenResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12F\n" +
-	"\x06claims\x18\x03 \x03(\v2..token.ValidateAccessTokenResponse.ClaimsEntryR\x06claims\x12\x14\n" +
-	"\x05error\x18\x04 \x01(\tR\x05error\x1a9\n" +
-	"\vClaimsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xca\x01\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05roles\x18\x03 \x01(\tR\x05roles\x12\x14\n" +
+	"\x05error\x18\x04 \x01(\tR\x05error2\xca\x01\n" +
 	"\fTokenService\x12\\\n" +
 	"\x13GenerateAccessToken\x12!.token.GenerateAccessTokenRequest\x1a\".token.GenerateAccessTokenResponse\x12\\\n" +
 	"\x13ValidateAccessToken\x12!.token.ValidateAccessTokenRequest\x1a\".token.ValidateAccessTokenResponseB,Z*github.com/bannote/token-service/pkg/protob\x06proto3"
@@ -278,27 +272,23 @@ func file_proto_token_proto_rawDescGZIP() []byte {
 	return file_proto_token_proto_rawDescData
 }
 
-var file_proto_token_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_proto_token_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_proto_token_proto_goTypes = []any{
 	(*GenerateAccessTokenRequest)(nil),  // 0: token.GenerateAccessTokenRequest
 	(*GenerateAccessTokenResponse)(nil), // 1: token.GenerateAccessTokenResponse
 	(*ValidateAccessTokenRequest)(nil),  // 2: token.ValidateAccessTokenRequest
 	(*ValidateAccessTokenResponse)(nil), // 3: token.ValidateAccessTokenResponse
-	nil,                                 // 4: token.GenerateAccessTokenRequest.ClaimsEntry
-	nil,                                 // 5: token.ValidateAccessTokenResponse.ClaimsEntry
 }
 var file_proto_token_proto_depIdxs = []int32{
-	4, // 0: token.GenerateAccessTokenRequest.claims:type_name -> token.GenerateAccessTokenRequest.ClaimsEntry
-	5, // 1: token.ValidateAccessTokenResponse.claims:type_name -> token.ValidateAccessTokenResponse.ClaimsEntry
-	0, // 2: token.TokenService.GenerateAccessToken:input_type -> token.GenerateAccessTokenRequest
-	2, // 3: token.TokenService.ValidateAccessToken:input_type -> token.ValidateAccessTokenRequest
-	1, // 4: token.TokenService.GenerateAccessToken:output_type -> token.GenerateAccessTokenResponse
-	3, // 5: token.TokenService.ValidateAccessToken:output_type -> token.ValidateAccessTokenResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // 0: token.TokenService.GenerateAccessToken:input_type -> token.GenerateAccessTokenRequest
+	2, // 1: token.TokenService.ValidateAccessToken:input_type -> token.ValidateAccessTokenRequest
+	1, // 2: token.TokenService.GenerateAccessToken:output_type -> token.GenerateAccessTokenResponse
+	3, // 3: token.TokenService.ValidateAccessToken:output_type -> token.ValidateAccessTokenResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_proto_token_proto_init() }
@@ -312,7 +302,7 @@ func file_proto_token_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_token_proto_rawDesc), len(file_proto_token_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
