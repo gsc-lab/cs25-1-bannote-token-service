@@ -6,9 +6,9 @@ import (
 	"log"
 	"net"
 
+	pb "github.com/gsc-lab/cs25-1-bannote-token-service/gen/go/token"
 	"github.com/gsc-lab/cs25-1-bannote-token-service/internal/config"
 	"github.com/gsc-lab/cs25-1-bannote-token-service/pkg/jwt"
-	pb "github.com/gsc-lab/cs25-1-bannote-token-service/pkg/proto"
 	"google.golang.org/grpc"
 )
 
@@ -71,7 +71,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	jwtManager := jwt.NewManager(cfg.JWT.Secret, cfg.JWT.ExpirationMinutes)
+	jwtManager := jwt.NewManager(cfg.JWT.PrivateKey, cfg.JWT.PublicKey, cfg.JWT.ExpirationMinutes)
 
 	s := grpc.NewServer()
 	pb.RegisterTokenServiceServer(s, &server{jwtManager: jwtManager})

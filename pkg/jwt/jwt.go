@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"crypto/rsa"
 	"fmt"
 	"time"
 
@@ -8,7 +9,8 @@ import (
 )
 
 type Manager struct {
-	secret     []byte
+	private    *rsa.PrivateKey
+	public     *rsa.PublicKey
 	expiration time.Duration
 }
 
@@ -18,9 +20,10 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func NewManager(secret string, expirationMinutes int) *Manager {
+func NewManager(private *rsa.PrivateKey, public *rsa.PublicKey, expirationMinutes int) *Manager {
 	return &Manager{
-		secret:     []byte(secret),
+		private:    private,
+		public:     public,
 		expiration: time.Duration(expirationMinutes) * time.Minute,
 	}
 }
@@ -39,8 +42,8 @@ func (m *Manager) GenerateToken(userID string, roles string) (string, int64, err
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(m.secret)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	tokenString, err := token.SignedString(m.private)
 	if err != nil {
 		return "", 0, fmt.Errorf("failed to sign token: %w", err)
 	}
@@ -50,10 +53,10 @@ func (m *Manager) GenerateToken(userID string, roles string) (string, int64, err
 
 func (m *Manager) ValidateToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return m.secret, nil
+		return m.public, nil
 	})
 
 	if err != nil {

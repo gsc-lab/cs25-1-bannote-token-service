@@ -1,9 +1,13 @@
 package config
 
 import (
+	"crypto/rsa"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Config struct {
@@ -16,22 +20,54 @@ type ServerConfig struct {
 }
 
 type JWTConfig struct {
-	Secret            string
+	PrivateKey        *rsa.PrivateKey
+	PublicKey         *rsa.PublicKey
 	ExpirationMinutes int
 }
 
 func Load() (*Config, error) {
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		return nil, fmt.Errorf("JWT_SECRET environment variable is required")
+	privateKeyBase64 := os.Getenv("PRIVATE_KEY_BASE64")
+	publicKeyBase64 := os.Getenv("PUBLIC_KEY_BASE64")
+
+	if privateKeyBase64 == "" {
+		return nil, fmt.Errorf("PRIVATE_KEY_BASE64 environment variable is required")
+	}
+
+	if publicKeyBase64 == "" {
+		return nil, fmt.Errorf("PUBLIC_KEY_BASE64 environment variable is required")
+	}
+
+	privateKeyBytes, err := base64.StdEncoding.DecodeString(privateKeyBase64)
+
+	if err != nil {
+		return nil, err
+	}
+
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
+
+	if err != nil {
+		return nil, err
+	}
+
+	publicKeyBytes, err := base64.StdEncoding.DecodeString(publicKeyBase64)
+
+	if err != nil {
+		return nil, err
+	}
+
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicKeyBytes)
+
+	if err != nil {
+		return nil, err
 	}
 
 	return &Config{
 		Server: ServerConfig{
-			Port: getEnv("SERVER_PORT", "9090"),
+			Port: getEnv("SERVER_PORT", "9091"),
 		},
 		JWT: JWTConfig{
-			Secret:            jwtSecret,
+			PrivateKey:        privateKey,
+			PublicKey:         publicKey,
 			ExpirationMinutes: getEnvAsInt("JWT_EXPIRATION_MINUTES", 15),
 		},
 	}, nil
