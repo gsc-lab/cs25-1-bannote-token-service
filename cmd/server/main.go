@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 
+	healthpb "github.com/gsc-lab/cs25-1-bannote-token-service/gen/go/healthcheck"
 	pb "github.com/gsc-lab/cs25-1-bannote-token-service/gen/go/token"
 	"github.com/gsc-lab/cs25-1-bannote-token-service/internal/config"
 	"github.com/gsc-lab/cs25-1-bannote-token-service/pkg/jwt"
@@ -15,6 +16,16 @@ import (
 type server struct {
 	pb.UnimplementedTokenServiceServer
 	jwtManager *jwt.Manager
+}
+
+type healthServer struct {
+	healthpb.UnimplementedHealthServer
+}
+
+func (h *healthServer) Check(ctx context.Context, req *healthpb.HealthCheckRequest) (*healthpb.HealthCheckResponse, error) {
+	return &healthpb.HealthCheckResponse{
+		Status: healthpb.HealthCheckResponse_SERVING,
+	}, nil
 }
 
 func (s *server) GenerateAccessToken(ctx context.Context, req *pb.GenerateAccessTokenRequest) (*pb.GenerateAccessTokenResponse, error) {
@@ -75,6 +86,7 @@ func main() {
 
 	s := grpc.NewServer()
 	pb.RegisterTokenServiceServer(s, &server{jwtManager: jwtManager})
+	healthpb.RegisterHealthServer(s, &healthServer{})
 
 	log.Printf("gRPC server listening on port %s", cfg.Server.Port)
 	if err := s.Serve(lis); err != nil {
