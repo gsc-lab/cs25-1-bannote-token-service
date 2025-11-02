@@ -2,6 +2,7 @@ version: v2
 clean: true
 inputs:
   - module: buf.build/bannote/token-service
+  - module: buf.build/bannote/common-service
 managed:
   enabled: true
   override:
